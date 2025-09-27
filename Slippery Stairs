@@ -1,13 +1,10 @@
 # script
-
 loadstring(game:HttpGet("https://pastebin.com/raw/QeEzGguq"))()
 
 # game
-
 https://www.roblox.com/games/132177827387692/UPD-Slippery-Stairs
 
 # full source code
-
 -- Roblox Teleport Script - OrionLib Style
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
