@@ -1,0 +1,425 @@
+(script) loadstring(game:HttpGet("https://pastebin.com/raw/QeEzGguq"))()
+
+(game) https://www.roblox.com/games/132177827387692/UPD-Slippery-Stairs
+
+        (full source code)
+-- Roblox Teleport Script - OrionLib Style
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+
+-- Симуляция OrionLib интерфейса
+local function CreateOrionStyleGUI()
+    if player.PlayerGui:FindFirstChild("PortalGUI") then
+        player.PlayerGui.PortalGUI:Destroy()
+    end
+
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "PortalGUI"
+    ScreenGui.Parent = player.PlayerGui
+    ScreenGui.ResetOnSpawn = false
+
+    -- Главное окно
+    local MainWindow = Instance.new("Frame")
+    MainWindow.Size = UDim2.new(0, 500, 0, 400)
+    MainWindow.Position = UDim2.new(0.5, -250, 0.5, -200)
+    MainWindow.BackgroundColor3 = Color3.new(0.08, 0.08, 0.08)
+    MainWindow.BorderSizePixel = 0
+    MainWindow.ClipsDescendants = true
+    MainWindow.Parent = ScreenGui
+    MainWindow.Active = true
+    MainWindow.Draggable = true
+
+    -- Верхняя панель
+    local TopBar = Instance.new("Frame")
+    TopBar.Size = UDim2.new(1, 0, 0, 30)
+    TopBar.Position = UDim2.new(0, 0, 0, 0)
+    TopBar.BackgroundColor3 = Color3.new(0.12, 0.12, 0.12)
+    TopBar.BorderSizePixel = 0
+    TopBar.Parent = MainWindow
+
+    local Title = Instance.new("TextLabel")
+    Title.Text = "PORTAL SYSTEM V2"
+    Title.Size = UDim2.new(1, -40, 1, 0)
+    Title.Position = UDim2.new(0, 10, 0, 0)
+    Title.BackgroundTransparency = 1
+    Title.TextColor3 = Color3.new(1, 1, 1)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 14
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.Parent = TopBar
+
+    local CloseButton = Instance.new("TextButton")
+    CloseButton.Text = "×"
+    CloseButton.Size = UDim2.new(0, 30, 0, 30)
+    CloseButton.Position = UDim2.new(1, -30, 0, 0)
+    CloseButton.BackgroundColor3 = Color3.new(0.12, 0.12, 0.12)
+    CloseButton.BorderSizePixel = 0
+    CloseButton.TextColor3 = Color3.new(1, 1, 1)
+    CloseButton.Font = Enum.Font.GothamBold
+    CloseButton.TextSize = 18
+    CloseButton.Parent = TopBar
+
+    -- Панель вкладок
+    local TabContainer = Instance.new("Frame")
+    TabContainer.Size = UDim2.new(1, 0, 0, 40)
+    TabContainer.Position = UDim2.new(0, 0, 0, 30)
+    TabContainer.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+    TabContainer.BorderSizePixel = 0
+    TabContainer.Parent = MainWindow
+
+    -- Контент вкладок
+    local ContentFrame = Instance.new("Frame")
+    ContentFrame.Size = UDim2.new(1, 0, 1, -70)
+    ContentFrame.Position = UDim2.new(0, 0, 0, 70)
+    ContentFrame.BackgroundColor3 = Color3.new(0.08, 0.08, 0.08)
+    ContentFrame.BorderSizePixel = 0
+    ContentFrame.Parent = MainWindow
+
+    -- Создаем вкладки
+    local Tabs = {
+        ["Main"] = {Name = "Main", Icon = "⭐"},
+        ["Teleport"] = {Name = "Teleport", Icon = "🔮"},
+        ["Settings"] = {Name = "Settings", Icon = "⚙️"}
+    }
+
+    local currentTab = "Main"
+    local tabButtons = {}
+
+    -- Функция переключения вкладок
+    local function SwitchTab(tabName)
+        currentTab = tabName
+        
+        -- Скрываем весь контент
+        for _, child in pairs(ContentFrame:GetChildren()) do
+            child.Visible = false
+        end
+        
+        -- Показываем активную вкладку
+        if ContentFrame:FindFirstChild(tabName .. "Content") then
+            ContentFrame[tabName .. "Content"].Visible = true
+        end
+        
+        -- Обновляем кнопки вкладок
+        for name, button in pairs(tabButtons) do
+            if name == tabName then
+                button.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+            else
+                button.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+            end
+        end
+    end
+
+    -- Создаем кнопки вкладок
+    local tabIndex = 0
+    for name, tab in pairs(Tabs) do
+        local TabButton = Instance.new("TextButton")
+        TabButton.Size = UDim2.new(0, 100, 1, 0)
+        TabButton.Position = UDim2.new(0, tabIndex * 100, 0, 0)
+        TabButton.BackgroundColor3 = name == "Main" and Color3.new(0.2, 0.2, 0.2) or Color3.new(0.1, 0.1, 0.1)
+        TabButton.BorderSizePixel = 0
+        TabButton.Text = tab.Icon .. " " .. tab.Name
+        TabButton.TextColor3 = Color3.new(1, 1, 1)
+        TabButton.Font = Enum.Font.Gotham
+        TabButton.TextSize = 12
+        TabButton.Parent = TabContainer
+        
+        TabButton.MouseButton1Click:Connect(function()
+            SwitchTab(name)
+        end)
+        
+        tabButtons[name] = TabButton
+        tabIndex = tabIndex + 1
+    end
+
+    -- Контент для вкладки Main
+    local MainContent = Instance.new("Frame")
+    MainContent.Name = "MainContent"
+    MainContent.Size = UDim2.new(1, 0, 1, 0)
+    MainContent.Position = UDim2.new(0, 0, 0, 0)
+    MainContent.BackgroundTransparency = 1
+    MainContent.Visible = true
+    MainContent.Parent = ContentFrame
+
+    local WelcomeLabel = Instance.new("TextLabel")
+    WelcomeLabel.Text = "Добро пожаловать в Portal System!"
+    WelcomeLabel.Size = UDim2.new(1, -20, 0, 30)
+    WelcomeLabel.Position = UDim2.new(0, 10, 0, 10)
+    WelcomeLabel.TextColor3 = Color3.new(1, 1, 1)
+    WelcomeLabel.Font = Enum.Font.GothamBold
+    WelcomeLabel.TextSize = 16
+    WelcomeLabel.BackgroundTransparency = 1
+    WelcomeLabel.TextXAlignment = Enum.TextXAlignment.Left
+    WelcomeLabel.Parent = MainContent
+
+    local DescLabel = Instance.new("TextLabel")
+    DescLabel.Text = "Используйте вкладку Teleport для настройки автотелепортации на портал за 500 кристаллов."
+    DescLabel.Size = UDim2.new(1, -20, 0, 60)
+    DescLabel.Position = UDim2.new(0, 10, 0, 50)
+    DescLabel.TextColor3 = Color3.new(0.8, 0.8, 0.8)
+    DescLabel.Font = Enum.Font.Gotham
+    DescLabel.TextSize = 12
+    DescLabel.TextWrapped = true
+    DescLabel.BackgroundTransparency = 1
+    DescLabel.TextXAlignment = Enum.TextXAlignment.Left
+    DescLabel.Parent = MainContent
+
+    -- Контент для вкладки Teleport
+    local TeleportContent = Instance.new("Frame")
+    TeleportContent.Name = "TeleportContent"
+    TeleportContent.Size = UDim2.new(1, 0, 1, 0)
+    TeleportContent.Position = UDim2.new(0, 0, 0, 0)
+    TeleportContent.BackgroundTransparency = 1
+    TeleportContent.Visible = false
+    TeleportContent.Parent = ContentFrame
+
+    local PortalSection = Instance.new("Frame")
+    PortalSection.Size = UDim2.new(1, -20, 0, 150)
+    PortalSection.Position = UDim2.new(0, 10, 0, 10)
+    PortalSection.BackgroundColor3 = Color3.new(0.05, 0.05, 0.05)
+    PortalSection.BorderColor3 = Color3.new(1, 1, 1)
+    PortalSection.BorderSizePixel = 1
+    PortalSection.Parent = TeleportContent
+
+    local PortalTitle = Instance.new("TextLabel")
+    PortalTitle.Text = "🔮 Портал на 500 кристаллов"
+    PortalTitle.Size = UDim2.new(1, -10, 0, 30)
+    PortalTitle.Position = UDim2.new(0, 5, 0, 5)
+    PortalTitle.TextColor3 = Color3.new(1, 1, 1)
+    PortalTitle.Font = Enum.Font.GothamBold
+    PortalTitle.TextSize = 14
+    PortalTitle.BackgroundTransparency = 1
+    PortalTitle.TextXAlignment = Enum.TextXAlignment.Left
+    PortalTitle.Parent = PortalSection
+
+    -- Чекбокс автотелепорта
+    local AutoToggle = Instance.new("TextButton")
+    AutoToggle.Size = UDim2.new(0, 120, 0, 30)
+    AutoToggle.Position = UDim2.new(0, 10, 0, 45)
+    AutoToggle.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+    AutoToggle.BorderColor3 = Color3.new(1, 1, 1)
+    AutoToggle.BorderSizePixel = 1
+    AutoToggle.Text = "Автотелепорт: ВЫКЛ"
+    AutoToggle.TextColor3 = Color3.new(1, 1, 1)
+    AutoToggle.Font = Enum.Font.Gotham
+    AutoToggle.TextSize = 12
+    AutoToggle.Parent = PortalSection
+
+    -- Интервал
+    local IntervalLabel = Instance.new("TextLabel")
+    IntervalLabel.Text = "Интервал (секунды):"
+    IntervalLabel.Size = UDim2.new(0, 120, 0, 25)
+    IntervalLabel.Position = UDim2.new(0, 10, 0, 85)
+    IntervalLabel.TextColor3 = Color3.new(1, 1, 1)
+    IntervalLabel.Font = Enum.Font.Gotham
+    IntervalLabel.TextSize = 12
+    IntervalLabel.BackgroundTransparency = 1
+    IntervalLabel.TextXAlignment = Enum.TextXAlignment.Left
+    IntervalLabel.Parent = PortalSection
+
+    local IntervalBox = Instance.new("TextBox")
+    IntervalBox.Size = UDim2.new(0, 60, 0, 25)
+    IntervalBox.Position = UDim2.new(0, 140, 0, 85)
+    IntervalBox.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+    IntervalBox.BorderColor3 = Color3.new(1, 1, 1)
+    IntervalBox.BorderSizePixel = 1
+    IntervalBox.TextColor3 = Color3.new(1, 1, 1)
+    IntervalBox.Text = "3"
+    IntervalBox.Font = Enum.Font.Gotham
+    IntervalBox.TextSize = 12
+    IntervalBox.Parent = PortalSection
+
+    -- Кнопка телепортации
+    local TeleportBtn = Instance.new("TextButton")
+    TeleportBtn.Size = UDim2.new(0, 200, 0, 35)
+    TeleportBtn.Position = UDim2.new(0.5, -100, 0, 120)
+    TeleportBtn.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+    TeleportBtn.BorderColor3 = Color3.new(1, 1, 1)
+    TeleportBtn.BorderSizePixel = 1
+    TeleportBtn.Text = "ТЕЛЕПОРТИРОВАТЬСЯ СЕЙЧАС"
+    TeleportBtn.TextColor3 = Color3.new(1, 1, 1)
+    TeleportBtn.Font = Enum.Font.GothamBold
+    TeleportBtn.TextSize = 12
+    TeleportBtn.Parent = PortalSection
+
+    -- Статус
+    local StatusLabel = Instance.new("TextLabel")
+    StatusLabel.Text = "Статус: Готов к работе"
+    StatusLabel.Size = UDim2.new(1, -20, 0, 25)
+    StatusLabel.Position = UDim2.new(0, 10, 0, 165)
+    StatusLabel.TextColor3 = Color3.new(1, 1, 1)
+    StatusLabel.Font = Enum.Font.Gotham
+    StatusLabel.TextSize = 12
+    StatusLabel.BackgroundTransparency = 1
+    StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+    StatusLabel.Parent = TeleportContent
+
+    -- Контент для вкладки Settings
+    local SettingsContent = Instance.new("Frame")
+    SettingsContent.Name = "SettingsContent"
+    SettingsContent.Size = UDim2.new(1, 0, 1, 0)
+    SettingsContent.Position = UDim2.new(0, 0, 0, 0)
+    SettingsContent.BackgroundTransparency = 1
+    SettingsContent.Visible = false
+    SettingsContent.Parent = ContentFrame
+
+    local SettingsTitle = Instance.new("TextLabel")
+    SettingsTitle.Text = "Настройки"
+    SettingsTitle.Size = UDim2.new(1, -20, 0, 30)
+    SettingsTitle.Position = UDim2.new(0, 10, 0, 10)
+    SettingsTitle.TextColor3 = Color3.new(1, 1, 1)
+    SettingsTitle.Font = Enum.Font.GothamBold
+    SettingsTitle.TextSize = 16
+    SettingsTitle.BackgroundTransparency = 1
+    SettingsTitle.TextXAlignment = Enum.TextXAlignment.Left
+    SettingsTitle.Parent = SettingsContent
+
+    -- Кнопка скрытия GUI
+    local HideBtn = Instance.new("TextButton")
+    HideBtn.Size = UDim2.new(0, 200, 0, 35)
+    HideBtn.Position = UDim2.new(0.5, -100, 0, 50)
+    HideBtn.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+    HideBtn.BorderColor3 = Color3.new(1, 1, 1)
+    HideBtn.BorderSizePixel = 1
+    HideBtn.Text = "СКРЫТЬ GUI (M)"
+    HideBtn.TextColor3 = Color3.new(1, 1, 1)
+    HideBtn.Font = Enum.Font.Gotham
+    HideBtn.TextSize = 12
+    HideBtn.Parent = SettingsContent
+
+    return {
+        ScreenGui = ScreenGui,
+        MainWindow = MainWindow,
+        CloseButton = CloseButton,
+        AutoToggle = AutoToggle,
+        IntervalBox = IntervalBox,
+        TeleportBtn = TeleportBtn,
+        StatusLabel = StatusLabel,
+        HideBtn = HideBtn
+    }
+end
+
+-- Основная логика
+local teleportThread = nil
+local isTeleporting = false
+local guiVisible = true
+
+local function TeleportToPortal()
+    local character = player.Character
+    if character and character:FindFirstChild("Humanoid") and character.Humanoid.Health > 0 then
+        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+        if humanoidRootPart then
+            humanoidRootPart.CFrame = CFrame.new(-74, 348, -1183)
+            return true
+        end
+    end
+    return false
+end
+
+local function StartAutoTeleport(interval)
+    if teleportThread then
+        coroutine.close(teleportThread)
+        teleportThread = nil
+    end
+    
+    teleportThread = coroutine.create(function()
+        while isTeleporting do
+            TeleportToPortal()
+            wait(interval)
+        end
+    end)
+    
+    coroutine.resume(teleportThread)
+end
+
+-- Создаем GUI
+local GUI = CreateOrionStyleGUI()
+
+-- Обработчики событий
+GUI.AutoToggle.MouseButton1Click:Connect(function()
+    isTeleporting = not isTeleporting
+    
+    if isTeleporting then
+        local interval = tonumber(GUI.IntervalBox.Text) or 3
+        if interval < 0.5 then interval = 0.5 end
+        
+        GUI.AutoToggle.Text = "Автотелепорт: ВКЛ"
+        GUI.AutoToggle.BackgroundColor3 = Color3.new(0, 0.5, 0)
+        GUI.StatusLabel.Text = "Статус: Автотелепорт активен (" .. interval .. "с)"
+        GUI.StatusLabel.TextColor3 = Color3.new(0, 1, 0)
+        
+        StartAutoTeleport(interval)
+    else
+        GUI.AutoToggle.Text = "Автотелепорт: ВЫКЛ"
+        GUI.AutoToggle.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+        GUI.StatusLabel.Text = "Статус: Остановлен"
+        GUI.StatusLabel.TextColor3 = Color3.new(1, 1, 1)
+        
+        if teleportThread then
+            coroutine.close(teleportThread)
+            teleportThread = nil
+        end
+    end
+end)
+
+GUI.TeleportBtn.MouseButton1Click:Connect(function()
+    if TeleportToPortal() then
+        GUI.StatusLabel.Text = "Статус: Успешно телепортирован!"
+        GUI.StatusLabel.TextColor3 = Color3.new(0, 1, 0)
+        
+        wait(2)
+        
+        if isTeleporting then
+            local interval = tonumber(GUI.IntervalBox.Text) or 3
+            GUI.StatusLabel.Text = "Статус: Автотелепорт активен (" .. interval .. "с)"
+        else
+            GUI.StatusLabel.Text = "Статус: Готов к работе"
+            GUI.StatusLabel.TextColor3 = Color3.new(1, 1, 1)
+        end
+    else
+        GUI.StatusLabel.Text = "Статус: Ошибка телепортации"
+        GUI.StatusLabel.TextColor3 = Color3.new(1, 0, 0)
+    end
+end)
+
+GUI.HideBtn.MouseButton1Click:Connect(function()
+    guiVisible = not guiVisible
+    GUI.MainWindow.Visible = guiVisible
+end)
+
+GUI.CloseButton.MouseButton1Click:Connect(function()
+    isTeleporting = false
+    if teleportThread then
+        coroutine.close(teleportThread)
+        teleportThread = nil
+    end
+    GUI.ScreenGui:Destroy()
+end)
+
+-- Обработка клавиши M
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.M then
+        guiVisible = not guiVisible
+        GUI.MainWindow.Visible = guiVisible
+    end
+end)
+
+-- Восстановление после смерти
+player.CharacterAdded:Connect(function(character)
+    character:WaitForChild("Humanoid")
+    wait(1)
+    
+    if isTeleporting then
+        local interval = tonumber(GUI.IntervalBox.Text) or 3
+        StartAutoTeleport(interval)
+    end
+end)
+
+player.CharacterRemoving:Connect(function()
+    if teleportThread then
+        coroutine.close(teleportThread)
+        teleportThread = nil
+    end
+end)
